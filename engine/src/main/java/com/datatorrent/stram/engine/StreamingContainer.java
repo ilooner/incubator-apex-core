@@ -1409,6 +1409,7 @@ public class StreamingContainer extends YarnContainerMain
           }
           finally {
             if (setOperators.contains(ndi)) {
+              logger.info("Has set operators.");
               try {
                 teardownNode(ndi);
               }
@@ -1435,6 +1436,7 @@ public class StreamingContainer extends YarnContainerMain
                   }
                 }
                 else {
+                  logger.info("Being decremented.");
                   signal.countDown();
                 }
               }
