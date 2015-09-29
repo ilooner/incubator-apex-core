@@ -519,6 +519,12 @@ public class StreamingContainer extends YarnContainerMain
     ArrayList<Integer> discoList = new ArrayList<Integer>();
     for (Integer operatorId : nodeList) {
       Thread t = nodes.get(operatorId).context.getThread();
+      logger.info("Thread {}", t);
+
+      if(t != null) {
+        logger.info("isAlive {}", t.isAlive());
+      }
+
       if (t == null || !t.isAlive()) {
         disconnectNode(operatorId);
       }

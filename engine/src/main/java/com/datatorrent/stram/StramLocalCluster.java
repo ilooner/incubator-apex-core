@@ -131,14 +131,19 @@ public class StramLocalCluster implements Runnable, Controller
     @Override
     public ContainerHeartbeatResponse processHeartbeat(ContainerHeartbeat msg)
     {
+      LOG.debug("ContainerHeartbeat {}", msg);
+
       if (injectShutdown.containsKey(msg.getContainerId())) {
         ContainerHeartbeatResponse r = new ContainerHeartbeatResponse();
         r.shutdown = true;
+        LOG.info("Shutting down container.");
         return r;
       }
+
       try {
         ContainerHeartbeatResponse rsp = dnmgr.processHeartbeat(msg);
         if (rsp != null) {
+          LOG.info("Something else down container. {}", rsp);
           // clone to not share attributes (stream codec etc.) between threads.
           rsp = SerializationUtils.clone(rsp);
         }
@@ -434,6 +439,8 @@ public class StramLocalCluster implements Runnable, Controller
   @SuppressWarnings({"SleepWhileInLoop", "ResultOfObjectAllocationIgnored"})
   public void run(long runMillis)
   {
+    runMillis = Math.max(3000, runMillis);
+
     long endMillis = System.currentTimeMillis() + runMillis;
 
     while (!appDone) {
@@ -489,6 +496,7 @@ public class StramLocalCluster implements Runnable, Controller
     }
 
     for (LocalStreamingContainer lsc: childContainers.values()) {
+      LOG.info("shutting down container {}", lsc.getContainerId());
       injectShutdown.put(lsc.getContainerId(), lsc);
       lsc.triggerHeartbeat();
     }

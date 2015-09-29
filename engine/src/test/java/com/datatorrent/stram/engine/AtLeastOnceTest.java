@@ -75,7 +75,7 @@ public class AtLeastOnceTest
     dag.addStream("connection", rip.output, cm.input);
 
     StramLocalCluster lc = new StramLocalCluster(dag);
-    lc.run();
+    lc.run(9000);
 
     Assert.assertEquals("Generated Outputs", maxTuples, CollectorOperator.collection.size());
   }
@@ -103,7 +103,7 @@ public class AtLeastOnceTest
     dag.addStream("connection", rip.output, cm.input);
 
     StramLocalCluster lc = new StramLocalCluster(dag);
-    lc.run();
+    lc.run(9000);
 
     Assert.assertEquals("Generated Outputs", maxTuples, CollectorOperator.collection.size());
   }
@@ -132,7 +132,7 @@ public class AtLeastOnceTest
     dag.addStream("connection", rip.output, cm.input).setLocality(Locality.CONTAINER_LOCAL);
 
     StramLocalCluster lc = new StramLocalCluster(dag);
-    lc.run();
+    lc.run(9000);
 
 //    for (Long l: collection) {
 //      logger.debug(Codec.getStringWindowId(l));

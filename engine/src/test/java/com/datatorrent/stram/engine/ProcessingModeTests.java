@@ -93,7 +93,7 @@ public class ProcessingModeTests
     dag.addStream("connection", rip.output, cm.input);
 
     StramLocalCluster lc = new StramLocalCluster(dag);
-    lc.run();
+    lc.run(9000);
   }
 
   public void testLinearOperatorRecovery() throws Exception
