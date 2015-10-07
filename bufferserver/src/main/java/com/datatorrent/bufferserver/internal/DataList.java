@@ -727,6 +727,7 @@ public class DataList
 
     protected void acquire(boolean wait)
     {
+      logger.info("{}", this, new Throwable());
       if (refCount.getAndIncrement() == 0 && storage != null && data == null) {
         final Runnable retriever = getRetriever();
         if (wait) {
@@ -767,6 +768,7 @@ public class DataList
               }
             }
             int numberOfInMemBlockPermits = DataList.this.numberOfInMemBlockPermits.incrementAndGet();
+            logger.info("{} {}", numberOfInMemBlockPermits, Block.this, new Throwable());
             assert numberOfInMemBlockPermits < MAX_COUNT_OF_INMEM_BLOCKS : "Number of in memory block permits " + numberOfInMemBlockPermits + " exceeded configured maximum " + MAX_COUNT_OF_INMEM_BLOCKS + '.';
             resumeSuspendedClients(numberOfInMemBlockPermits);
           }
@@ -777,6 +779,7 @@ public class DataList
     protected void release(boolean wait)
     {
       final int refCount = this.refCount.decrementAndGet();
+      logger.info("{} {}", refCount, this, new Throwable());
       if (refCount == 0 && storage != null) {
         assert (next != null);
         final Runnable storer = getStorer(data, readingOffset, writingOffset, storage);
