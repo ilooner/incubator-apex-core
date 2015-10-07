@@ -35,6 +35,7 @@ import com.datatorrent.bufferserver.util.Codec;
 import com.datatorrent.bufferserver.util.SerializedData;
 import com.datatorrent.netlet.AbstractLengthPrependerClient;
 import com.datatorrent.netlet.EventLoop;
+import java.util.concurrent.ExecutorService;
 
 /**
  * LogicalNode represents a logical node in a DAG<p>
@@ -56,6 +57,7 @@ public class LogicalNode implements DataListener
   private final long skipWindowId;
   private long baseSeconds;
   private boolean caughtup;
+  private ExecutorService service;
 
   /**
    *
@@ -64,8 +66,9 @@ public class LogicalNode implements DataListener
    * @param iterator
    * @param skipUptoWindowId
    */
-  public LogicalNode(String upstream, String group, Iterator<SerializedData> iterator, long skipUptoWindowId)
+  public LogicalNode(String upstream, String group, Iterator<SerializedData> iterator, long skipUptoWindowId, ExecutorService service)
   {
+    this.service = service;
     this.upstream = upstream;
     this.group = group;
     this.physicalNodes = new HashSet<PhysicalNode>();
@@ -302,6 +305,19 @@ public class LogicalNode implements DataListener
       else {
         catchUp();
       }
+    }
+
+    if(!ready && iterator.hasSuspendedClients()) {
+      logger.info("The odd case happend");
+      service.submit(new Runnable() {
+
+        @Override
+        public void run()
+        {
+          addedData();
+        }
+      }
+      );
     }
   }
 

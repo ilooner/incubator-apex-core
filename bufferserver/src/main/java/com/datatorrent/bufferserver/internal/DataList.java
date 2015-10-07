@@ -862,6 +862,11 @@ public class DataList
       readOffset = da.readingOffset;
     }
 
+    public boolean hasSuspendedClients()
+    {
+      return !DataList.this.suspendedClients.isEmpty();
+    }
+
     // this is a hack! Get rid of it.
     public int getBaseSeconds()
     {
