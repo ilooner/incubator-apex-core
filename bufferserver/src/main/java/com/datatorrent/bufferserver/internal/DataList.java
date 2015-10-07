@@ -88,7 +88,7 @@ public class DataList
      * We use 64MB (the default HDFS block getSize) as the getSize of the memory pool so we can flush the data 1 block at a time to the filesystem.
      * we will use default value of 8 block sizes to be cached in memory
      */
-    this(identifier, 64 * 1024 * 1024, 8);
+    this(identifier, 1 * 1024 * 1024, 8);
   }
 
   public int getBlockSize()
