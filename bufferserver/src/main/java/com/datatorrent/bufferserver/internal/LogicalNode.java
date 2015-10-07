@@ -36,6 +36,7 @@ import com.datatorrent.bufferserver.util.Codec;
 import com.datatorrent.bufferserver.util.SerializedData;
 import com.datatorrent.netlet.AbstractLengthPrependerClient;
 import com.datatorrent.netlet.EventLoop;
+import java.util.logging.Level;
 
 /**
  * LogicalNode represents a logical node in a DAG<p>
@@ -309,6 +310,13 @@ public class LogicalNode implements DataListener
 
     if (!ready && iterator.hasSuspendedClients()) {
       logger.info("The odd case happend");
+
+      try {
+        Thread.sleep(1000);
+      } catch (InterruptedException ex) {
+        logger.info("", ex);
+      }
+
       service.submit(new Runnable()
       {
 
