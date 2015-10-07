@@ -19,6 +19,7 @@
 package com.datatorrent.bufferserver.internal;
 
 import java.util.Collection;
+import java.util.concurrent.ExecutorService;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -35,7 +36,6 @@ import com.datatorrent.bufferserver.util.Codec;
 import com.datatorrent.bufferserver.util.SerializedData;
 import com.datatorrent.netlet.AbstractLengthPrependerClient;
 import com.datatorrent.netlet.EventLoop;
-import java.util.concurrent.ExecutorService;
 
 /**
  * LogicalNode represents a logical node in a DAG<p>
@@ -307,15 +307,17 @@ public class LogicalNode implements DataListener
       }
     }
 
-    if(!ready && iterator.hasSuspendedClients()) {
+    if (!ready && iterator.hasSuspendedClients()) {
       logger.info("The odd case happend");
-      service.submit(new Runnable() {
+      service.submit(new Runnable()
+      {
 
         @Override
         public void run()
         {
           addedData();
         }
+
       }
       );
     }

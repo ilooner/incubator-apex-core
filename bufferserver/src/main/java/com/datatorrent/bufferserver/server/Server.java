@@ -274,7 +274,8 @@ public class Server implements ServerListener
       ln = new LogicalNode(upstream_identifier,
                            type,
                            dl.newIterator(identifier, skipWindowId),
-                           skipWindowId);
+                           skipWindowId,
+                           serverHelperExecutor);
 
       int mask = request.getMask();
       if (mask != 0) {
