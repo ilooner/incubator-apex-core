@@ -125,7 +125,8 @@ import com.datatorrent.stram.webapp.*;
  *
  * @since 0.3.2
  */
-public class StreamingContainerManager implements PlanContext
+public class
+StreamingContainerManager implements PlanContext
 {
   private final static Logger LOG = LoggerFactory.getLogger(StreamingContainerManager.class);
   public final static String GATEWAY_LOGIN_URL_PATH = "/ws/v2/login";
