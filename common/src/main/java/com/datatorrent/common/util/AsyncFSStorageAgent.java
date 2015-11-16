@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datatorrent.netlet.util.DTThrowable;
+import java.util.logging.Level;
 
 /**
  * <p>AsyncFSStorageAgent class.</p>
@@ -90,6 +91,12 @@ public class AsyncFSStorageAgent extends FSStorageAgent
 
   public void copyToHDFS(final int operatorId, final long windowId) throws IOException
   {
+    try {
+      Thread.sleep(2000L);
+    } catch (InterruptedException ex) {
+      throw new RuntimeException(ex);
+    }
+
     String operatorIdStr = String.valueOf(operatorId);
     File directory = new File(localBasePath, operatorIdStr);
     String window = Long.toHexString(windowId);

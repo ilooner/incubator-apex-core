@@ -63,6 +63,7 @@ import com.datatorrent.api.Operator.ProcessingMode;
 import com.datatorrent.api.Operator.Unifier;
 import com.datatorrent.api.Sink;
 import com.datatorrent.api.Stats;
+import com.datatorrent.api.Stats.CheckpointStats;
 import com.datatorrent.api.StatsListener;
 import com.datatorrent.api.StatsListener.OperatorRequest;
 import com.datatorrent.api.StorageAgent;
@@ -445,14 +446,19 @@ public abstract class Node<OPERATOR extends Operator> implements Component<Opera
       if (pair != null && pair.getFirst().isDone()) {
         taskQueue.poll();
         try {
+          CheckpointStats checkpointStats = pair.getFirst().get();
           stats.checkpointStats = pair.getFirst().get();
-          stats.checkpoint = new Checkpoint(pair.getSecond(), applicationWindowCount, checkpointWindowCount);
+          stats.checkpoint = new Checkpoint(pair.getSecond(), checkpointStats.applicationWindowCount, checkpointStats.checkpointWindowCount);
+
+          logger.info("====== application window count {} {}", ((Checkpoint) stats.checkpoint).applicationWindowCount % 6, ((Checkpoint) stats.checkpoint).checkpointWindowCount % 6);
           if (operator instanceof Operator.CheckpointListener) {
             ((Operator.CheckpointListener) operator).checkpointed(pair.getSecond());
           }
         } catch (Exception ex) {
           throw DTThrowable.wrapIfChecked(ex);
         }
+      } else {
+        logger.info("===== not done yet {}", applicationWindowCount);
       }
     }
 
@@ -498,6 +504,8 @@ public abstract class Node<OPERATOR extends Operator> implements Component<Opera
                 checkpointHandler.agent = asyncFSStorageAgent;
                 checkpointHandler.operatorId = id;
                 checkpointHandler.windowId = windowId;
+                checkpointStats.applicationWindowCount = applicationWindowCount;
+                checkpointStats.checkpointWindowCount = checkpointWindowCount;
                 checkpointHandler.stats = checkpointStats;
                 FutureTask<Stats.CheckpointStats> futureTask = new FutureTask<Stats.CheckpointStats>(checkpointHandler);
                 taskQueue.add(new Pair<FutureTask<Stats.CheckpointStats>, Long>(futureTask, windowId));

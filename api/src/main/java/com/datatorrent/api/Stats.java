@@ -40,6 +40,8 @@ public interface Stats extends Serializable
   {
     public long checkpointStartTime;
     public long checkpointTime;
+    public int applicationWindowCount;
+    public int checkpointWindowCount;
 
     @Override
     public String toString()
