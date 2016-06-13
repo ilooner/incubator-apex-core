@@ -4,6 +4,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -16,8 +19,15 @@ public class TimeBasedPriorityQueue<T>
   public void upSert(T value)
   {
     TimeWrapper<T> timeWrapper = timeWrappperMap.get(value);
-    sortedTimestamp.remove(timeWrapper);
-    timeWrapper.setTimestamp(System.currentTimeMillis());
+
+    if (timeWrapper != null) {
+      sortedTimestamp.remove(timeWrapper);
+      timeWrapper.setTimestamp(System.currentTimeMillis());
+    } else {
+      timeWrapper = new TimeWrapper<>(value, System.currentTimeMillis());
+      timeWrappperMap.put(value, timeWrapper);
+    }
+
     sortedTimestamp.add(timeWrapper);
   }
 
@@ -28,17 +38,21 @@ public class TimeBasedPriorityQueue<T>
     timeWrappperMap.remove(value);
   }
 
-  public void removeLRU(int count)
+  public Set<T> removeLRU(int count)
   {
     Preconditions.checkArgument(count > 0 && count <= timeWrappperMap.size());
 
     Iterator<TimeWrapper<T>> iterator = sortedTimestamp.iterator();
+    Set<T> valueSet = Sets.newHashSet();
 
     for (int counter = 0; counter < count; counter++) {
       T value = iterator.next().getKey();
+      valueSet.add(value);
       timeWrappperMap.remove(value);
       iterator.remove();
     }
+
+    return valueSet;
   }
 
   protected static class TimeWrapper<T> implements Comparable<TimeWrapper<T>>
@@ -70,9 +84,9 @@ public class TimeBasedPriorityQueue<T>
     @Override
     public int compareTo(TimeWrapper<T> timeWrapper)
     {
-      if (this.timestamp > timeWrapper.getTimestamp()) {
+      if (this.timestamp < timeWrapper.getTimestamp()) {
         return -1;
-      } else if (this.timestamp < timeWrapper.getTimestamp()) {
+      } else if (this.timestamp > timeWrapper.getTimestamp()) {
         return 1;
       }
 
@@ -99,5 +113,16 @@ public class TimeBasedPriorityQueue<T>
     {
       return key.hashCode();
     }
+
+    @Override
+    public String toString()
+    {
+      return "TimeWrapper{" +
+          "key=" + key +
+          ", timestamp=" + timestamp +
+          '}';
+    }
   }
+
+  private static final Logger LOG = LoggerFactory.getLogger(TimeBasedPriorityQueue.class);
 }

@@ -27,7 +27,6 @@ import com.google.common.collect.Multiset;
 
 import com.datatorrent.api.Component;
 import com.datatorrent.api.Context.OperatorContext;
-import com.datatorrent.api.Operator;
 
 /**
  * This is a marker interface for a spillable data structure.

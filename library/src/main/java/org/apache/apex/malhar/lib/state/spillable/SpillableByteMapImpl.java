@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull;
 import org.apache.apex.malhar.lib.state.BucketedState;
 import org.apache.apex.malhar.lib.utils.serde.Serde;
 import org.apache.apex.malhar.lib.utils.serde.SliceUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 import com.google.common.base.Preconditions;
@@ -24,9 +25,9 @@ public class SpillableByteMapImpl<K, V> implements Spillable.SpillableByteMap<K,
   private byte[] identifier;
   private long bucket;
   @NotNull
-  private Serde<K, byte[]> serdeKey;
+  private Serde<K, Slice> serdeKey;
   @NotNull
-  private Serde<V, byte[]> serdeValue;
+  private Serde<V, Slice> serdeValue;
 
   private int size = 0;
 
@@ -38,8 +39,8 @@ public class SpillableByteMapImpl<K, V> implements Spillable.SpillableByteMap<K,
     //for kryo
   }
 
-  public SpillableByteMapImpl(SpillableStateStore store, byte[] identifier, long bucket, Serde<K, byte[]> serdeKey,
-      Serde<V, byte[]> serdeValue)
+  public SpillableByteMapImpl(SpillableStateStore store, byte[] identifier, long bucket, Serde<K, Slice> serdeKey,
+      Serde<V, Slice> serdeValue)
   {
     this.store = Preconditions.checkNotNull(store);
     this.identifier = Preconditions.checkNotNull(identifier);
@@ -83,14 +84,14 @@ public class SpillableByteMapImpl<K, V> implements Spillable.SpillableByteMap<K,
       return val;
     }
 
-    Slice valSlice = store.getSync(bucket, new Slice(SliceUtils.concatenate(identifier, serdeKey.serialize(key))));
+    Slice valSlice = store.getSync(bucket, SliceUtils.concatenate(identifier, serdeKey.serialize(key)));
 
     if (valSlice == null || valSlice == BucketedState.EXPIRED || valSlice.length == 0) {
       return null;
     }
 
     tempOffset.setValue(valSlice.offset);
-    return serdeValue.deserialize(valSlice.buffer, tempOffset);
+    return serdeValue.deserialize(valSlice, tempOffset);
   }
 
   @Override
@@ -151,29 +152,26 @@ public class SpillableByteMapImpl<K, V> implements Spillable.SpillableByteMap<K,
   @Override
   public void beginWindow(long windowId)
   {
-    cache.beginWindow(windowId);
   }
 
   @Override
   public void endWindow()
   {
-    cache.getChangedKeys()
+    for (K key: cache.getChangedKeys()) {
+      store.put(this.bucket, SliceUtils.concatenate(identifier, serdeKey.serialize(key)),
+          SliceUtils.concatenate(identifier, serdeValue.serialize(cache.get(key))));
+    }
 
-    cache.getRemovedKeys()
+    for (K key: cache.getRemovedKeys()) {
+      store.put(this.bucket, SliceUtils.concatenate(identifier, serdeKey.serialize(key)),
+          new Slice(ArrayUtils.EMPTY_BYTE_ARRAY));
+    }
 
     cache.endWindow();
   }
 
   @Override
   public void teardown()
-  {
-  }
-
-  private void putToStore(K key, V value)
-  {
-  }
-
-  private void removeFromStore(K key)
   {
   }
 }

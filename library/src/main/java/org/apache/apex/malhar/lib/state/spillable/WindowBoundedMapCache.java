@@ -78,16 +78,21 @@ public class WindowBoundedMapCache<K, V>
     return removedKeys;
   }
 
-  public void beginWindow(long windowId)
-  {
-  }
+  /*
+    Note: beginWindow is intentionally not implemented because many users need a cache that does not require
+    beginWindow to be called.
+   */
 
   public void endWindow()
   {
     int count = cache.size() - maxSize;
 
     if (count > 0) {
-      priorityQueue.removeLRU(count);
+      Set<K> expiredKeys = priorityQueue.removeLRU(count);
+
+      for (K expiredKey: expiredKeys) {
+        cache.remove(expiredKey);
+      }
     }
 
     changedKeys = Sets.newHashSet();
